@@ -24,7 +24,7 @@ SBIT(TDI, 0x90, 6);
 SBIT(TDO, 0x90, 7);
 */
 
-SBIT(TMS, 0x90, 4);
+SBIT(TMS, 0xB0, 2);
 SBIT(TCK, 0x90, 7);
 SBIT(TDI, 0x90, 5);
 SBIT(TDO, 0x90, 6);
@@ -633,7 +633,7 @@ void main()
 			if (USBByteCount) //USB接收端点有数据
 			{
 				//memcpy(receive_buffer, Ep2Buffer, USBByteCount);
-				
+
 				__asm
 					push ar7
 					push a
@@ -642,7 +642,7 @@ void main()
 					dec _XBUS_AUX	//dptr0
 					mov	dptr, #_Ep2Buffer	//source Ep2Buffer
 					mov ar7, _USBByteCount
-				1$:	
+				1$:
 					movx a, @dptr
 					inc dptr
 					.db #0xA5	//WCH 0xA5 instruction
@@ -650,7 +650,7 @@ void main()
 					pop a
 					pop ar7
 				__endasm;
-				
+
 				UEP2_CTRL = UEP2_CTRL & ~MASK_UEP_R_RES | UEP_R_RES_ACK;
 				length = USBByteCount;
 				USBByteCount = 0;
@@ -661,7 +661,7 @@ void main()
 			{
 				P2 = receive_buffer[read_buffer_index];
 				read_buffer_index++;
-				//TODO: Assembly implementation for IO control. 
+				//TODO: Assembly implementation for IO control.
 				//TODO: Use hardware spi for shift control.
 				if (shift_count == 0)
 				{
@@ -783,7 +783,7 @@ void main()
 				{
 					uint8_t i;
 					send_len = (data_len >= 62) ? 62 : data_len;
-					
+
 					for (i = 0; i < send_len; i++)
 					{
 						Ep1Buffer[i + 2] = transmit_buffer[transmit_buffer_out_offset];
@@ -800,7 +800,7 @@ void main()
 					mov dph, #(_transmit_buffer >> 8)	//fixed address 0x00XX
 					mov dpl, _transmit_buffer_out_offset
 					mov ar7, _send_len
-				2$:	
+				2$:
 					movx a, @dptr
 					.db #0xA5	//WCH 0xA5 instruction
 					inc _transmit_buffer_out_offset	//idata
@@ -812,7 +812,7 @@ void main()
 					pop ar7
 					__endasm;
 					*/
-					
+
 					ep1_in_busy = 1;
 					UEP1_T_LEN = send_len + 2;
 					UEP1_CTRL = UEP1_CTRL & ~MASK_UEP_T_RES | UEP_T_RES_ACK; //应答ACK
